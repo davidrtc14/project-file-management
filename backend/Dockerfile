@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expõe a porta (deve ser a mesma do .env)
-EXPOSE 3000
+
 
 # Comando para iniciar o servidor
-CMD ["npm", "run", "dev"]
+CMD []
