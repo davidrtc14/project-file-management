@@ -39,6 +39,8 @@ services:
     restart: always
     ports:
       - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     working_dir: /app
     command: ["npm", "run", "dev", "--", "--host"]
 

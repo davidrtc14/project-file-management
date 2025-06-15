@@ -18,3 +18,4 @@ EXPOSE 5173
 
 # Rodar o dev server do Vite
 CMD ["npm", "run", "dev", "--", "--host"]
+
