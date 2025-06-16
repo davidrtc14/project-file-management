@@ -1,6 +1,8 @@
 # Imagem base
 FROM node:18
 
+RUN apt-get update && apt-get install -y netcat-openbsd
+
 # Diretório de trabalho dentro do container
 WORKDIR /app
 
@@ -14,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Expõe a porta (deve ser a mesma do .env)
-
+EXPOSE 3000
 
 # Comando para iniciar o servidor
-CMD []
+CMD ["npm", "run", "dev"]
