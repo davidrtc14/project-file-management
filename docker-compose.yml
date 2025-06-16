@@ -12,6 +12,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   backend:
     build: ./backend
@@ -42,6 +43,9 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     command: ["npm", "run", "dev", "--", "--host"]
 
 volumes:
