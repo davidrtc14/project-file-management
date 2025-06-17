@@ -6,8 +6,8 @@ export default function TransferenciaForm() {
   const [form, setForm] = useState({
     nome_arquivo: '',
     descricao: '',
-    setor_remetente: '',
-    setor_destinatario: '',
+    setor_remetente: 'Selecione',
+    setor_destinatario: 'Selecione',
     responsavel: '',
     data_transferencia: '',
     caminho_arquivo: '',
@@ -59,8 +59,24 @@ export default function TransferenciaForm() {
       <form onSubmit={handleSubmit}>
         <input name="nome_arquivo" value={form.nome_arquivo} onChange={handleChange} placeholder="Nome do arquivo" required />
         <input name="descricao" value={form.descricao} onChange={handleChange} placeholder="Descrição" />
-        <input name="setor_remetente" value={form.setor_remetente} onChange={handleChange} placeholder="Setor Remetente" required />
-        <input name="setor_destinatario" value={form.setor_destinatario} onChange={handleChange} placeholder="Setor Destinatário" required />
+
+        <label htmlFor="setor_remetente">Setor Remetente: </label>
+        <select id="setor_remetente" value={form.setor_remetente} onChange={handleChange} required>
+          <option value="geee">GEEE</option>
+          <option value="geaf">GEAF</option>
+          <option value="geret">GERET</option>
+          <option value="gesan">GESAN</option>
+        </select>
+
+        <label htmlFor="setor_destinatario">Setor Destinatário: </label>
+        <select id="setor_destinatario" value={form.setor_destinatario} onChange={handleChange} required>
+          <option value="geee">GEEE</option>
+          <option value="geaf">GEAF</option>
+          <option value="geret">GERET</option>
+          <option value="gesan">GESAN</option>
+        </select>
+
+        
         <input name="responsavel" value={form.responsavel} onChange={handleChange} placeholder="Responsável" required />
         <input
           type="date"
@@ -69,7 +85,6 @@ export default function TransferenciaForm() {
           onChange={handleChange}
           required
         />
-        <input name="caminho_arquivo" value={form.caminho_arquivo} onChange={handleChange} placeholder="Caminho do arquivo" />
         <button type="submit">Salvar</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}

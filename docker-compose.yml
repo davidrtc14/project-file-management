@@ -13,13 +13,19 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
   backend:
     build: ./backend
     container_name: backend_arquivos
     restart: always
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     ports:
       - "3000:3000"
     env_file:
@@ -28,7 +34,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-    command: ["./wait-for-mysql.sh", "npm", "run", "dev"]
+    command: ["npm", "run", "dev"]
 
   frontend:
     build:
