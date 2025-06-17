@@ -1,34 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom'; // Importe 'Link' para o botão de voltar
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 export default function VerTransferencia() {
   const [transferencia, setTransferencia] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { id } = useParams(); // Hook para pegar o ID da URL (ex: "123" de /transferencias/123)
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const handleAuthError = (err) => {
+    if (err.response && (err.response.status === 403 || err.response.status === 401)) {
+      console.log("Token expirado ou inválido. Redirecionando para login.");
+      localStorage.removeItem('token');
+      navigate('/login');
+    } else {
+      setError(err.response?.data?.erro || 'Ocorreu um erro ao carregar a transferência.');
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    // Só faz a requisição se um ID for encontrado na URL
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log("Nenhum token encontrado. Redirecionando para login.");
+      navigate('/login');
+      return;
+    }
+
     if (id) {
-      const token = localStorage.getItem('token');
-      setLoading(true); // Indica que os dados estão sendo carregados
+      setLoading(true);
       axios
-        .get(`http://localhost:3000/api/transferencias/${id}`, { // Requisição ao backend pelo ID
+        .get(`http://localhost:3000/api/transferencias/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          setTransferencia(res.data); // Define os dados da transferência no estado
-          setLoading(false);         // Finaliza o estado de carregamento
+          setTransferencia(res.data);
+          setLoading(false);
         })
-        .catch((err) => {
-          setError(err.response?.data?.erro || 'Erro ao carregar detalhes da transferência.');
-          setLoading(false); // Finaliza o estado de carregamento, mas com erro
-        });
+        .catch(handleAuthError);
     }
-  }, [id]); // O efeito é executado novamente se o 'id' na URL mudar
+  }, [id, navigate]);
 
-  // Função para formatar o timestamp de 'criado_em' (com data e hora)
   const formatarDataCompleta = (dataString) => {
     if (!dataString) return 'Não disponível';
     const data = new Date(dataString);
@@ -43,16 +56,12 @@ export default function VerTransferencia() {
     });
   };
 
-  // Função para formatar a data simples (DD/MM/AAAA) para 'data_transferencia'
   const formatarApenasData = (dataString) => {
     if (!dataString) return 'Não disponível';
     const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR'); // Formato padrão do local (DD/MM/AAAA)
+    return data.toLocaleDateString('pt-BR');
   };
 
-
-  // --- Renderização Condicional da UI ---
-  // Exibe mensagem de carregamento
   if (loading) {
     return (
       <div>
@@ -62,7 +71,6 @@ export default function VerTransferencia() {
     );
   }
 
-  // Exibe mensagem de erro
   if (error) {
     return (
       <div>
@@ -73,7 +81,6 @@ export default function VerTransferencia() {
     );
   }
 
-  // Exibe mensagem se não houver dados (ex: ID inválido que retorna vazio do backend)
   if (!transferencia) {
     return (
       <div>
@@ -84,7 +91,6 @@ export default function VerTransferencia() {
     );
   }
 
-  // --- Renderização dos Detalhes da Transferência (quando os dados estão carregados) ---
   return (
     <div>
       <h2>Detalhes da Transferência: {transferencia.nome_arquivo}</h2>
@@ -98,7 +104,6 @@ export default function VerTransferencia() {
       <p><strong>Caminho do Arquivo:</strong> {transferencia.caminho_arquivo || 'N/A'}</p>
       <p><strong>Registrado em:</strong> {formatarDataCompleta(transferencia.criado_em)}</p>
 
-      {/* Botões de Ação */}
       <div style={{ marginTop: '20px' }}>
         <Link to={`/transferencias/${transferencia.id}/editar`} style={{ marginRight: '10px' }}>Editar Transferência</Link>
         <Link to="/transferencias">Voltar para a Lista</Link>
