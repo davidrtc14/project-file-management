@@ -1,9 +1,7 @@
-// src/index.jsx ou src/main.jsx
 import React from 'react';
-import ReactDOM from 'react-dom/client'; // ou 'react-dom' para versões antigas
-import App from './App'; // Importa seu componente principal App
+import ReactDOM from 'react-dom/client';
+import App from './App';
 
-// Certifique-se de que está pegando o elemento 'root' e renderizando o App nele
 const rootElement = document.getElementById('root');
 if (rootElement) {
     ReactDOM.createRoot(rootElement).render(

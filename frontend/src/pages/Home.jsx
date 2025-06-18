@@ -13,8 +13,8 @@ export default function Home() {
     <div>
       <h1>Bem-vindo ao Sistema!</h1>
       <nav style={{ marginBottom: '20px' }}>
-        <Link to="/transferencias" style={{ marginRight: '15px' }}>Ver Transferências</Link>
-        <Link to="/transferencias/novo">Nova Transferência</Link>
+        <Link to="/solicitacoes" style={{ marginRight: '15px' }}>Ver Solicitações</Link>
+        <Link to="/solicitacoes/novo">Nova Solicitação</Link>
       </nav>
       <button onClick={handleLogout}>
         Sair

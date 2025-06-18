@@ -1,16 +1,16 @@
-const Transferencia = require('../models/transferenciaModel');
+const Solicitacao = require('../models/solicitacoesModel');
 
-const transferenciaController = {
+const solicitacaoController = {
   criar: async (req, res) => {
     try {
-      const transferencia = new Transferencia(req.body);
-      const id = await transferencia.salvar();
+      const solicitacao = new Solicitacao(req.body);
+      const id = await solicitacao.salvar();
 
-      if (transferencia.errors.length > 0) {
-        return res.status(400).json({ erros: transferencia.errors });
+      if (solicitacao.errors.length > 0) {
+        return res.status(400).json({ erros: solicitacao.errors });
       }
 
-      return res.status(201).json({ mensagem: 'Transferência criada com sucesso', id });
+      return res.status(201).json({ mensagem: 'Solicitação criada com sucesso', id });
     } catch (err) {
       return res.status(500).json({ erro: 'Erro no servidor' });
     }
@@ -18,48 +18,48 @@ const transferenciaController = {
 
   listar: async (req, res) => {
     try {
-      const dados = await Transferencia.listarTodos();
+      const dados = await Solicitacao.listarTodos();
       return res.status(200).json(dados);
     } catch (err) {
-      return res.status(500).json({ erro: 'Erro ao buscar transferências' });
+      return res.status(500).json({ erro: 'Erro ao buscar solicitações' });
     }
   },
 
   buscar: async (req, res) => {
     try {
       const id = req.params.id;
-      const transferencia = await Transferencia.buscarPorId(id);
+      const solicitacao = await Solicitacao.buscarPorId(id);
 
-      if (!transferencia) {
-        return res.status(404).json({ erro: 'Transferência não encontrada' });
+      if (!solicitacao) {
+        return res.status(404).json({ erro: 'Solicitação não encontrada' });
       }
 
-      return res.status(200).json(transferencia);
+      return res.status(200).json(solicitacao);
     } catch (err) {
-      return res.status(500).json({ erro: 'Erro ao buscar transferência' });
+      return res.status(500).json({ erro: 'Erro ao buscar solicitação' });
     }
   },
 
   atualizar: async (req, res) => {
     try {
       const id = req.params.id;
-      await Transferencia.atualizar(id, req.body);
-      return res.status(200).json({ mensagem: 'Transferência atualizada com sucesso' });
+      await Solicitacao.atualizar(id, req.body);
+      return res.status(200).json({ mensagem: 'Solicitação atualizada com sucesso' });
     } catch (err) {
-      console.error('Erro ao atualizar transferência:', err);
-      return res.status(500).json({ erro: 'Erro ao atualizar transferência' });
+      console.error('Erro ao atualizar solicitação:', err);
+      return res.status(500).json({ erro: 'Erro ao atualizar solicitação' });
     }
   },
 
   excluir: async (req, res) => {
     try {
       const id = req.params.id;
-      await Transferencia.excluir(id);
-      return res.status(200).json({ mensagem: 'Transferência excluída com sucesso' });
+      await Solicitacao.excluir(id);
+      return res.status(200).json({ mensagem: 'Solicitação excluída com sucesso' });
     } catch (err) {
-      return res.status(500).json({ erro: 'Erro ao excluir transferência', err});
+      return res.status(500).json({ erro: 'Erro ao excluir solicitação', err });
     }
   }
 };
 
-module.exports = transferenciaController;
+module.exports = solicitacaoController;

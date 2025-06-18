@@ -1,13 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Transferencias from './pages/Transferencias';
-import TransferenciaForm from './pages/TransferenciaForm';
+import Login from './pages/login/Login';
+import Cadastro from './pages/login/Cadastro';
 import Home from './pages/Home';
-import Cadastro from './pages/Cadastro';
-import VerTransferencia from './pages/VerTransferencia';
+import Solicitacoes from './pages/solicitacoes/Solicitacoes';
+import SolicitacaoForm from './pages/solicitacoes/SolicitacaoForm';
+import VerSolicitacao from './pages/solicitacoes/VerSolicitacao';
 
-// O PrivateRoute está perfeito como está.
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/login" />;
@@ -22,12 +21,7 @@ export default function App() {
           element={localStorage.getItem('token') ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />}
         />
         <Route path="/login" element={<Login />} />
-
-        <Route
-          path="/cadastro"
-          element={<Cadastro />}
-        />
-
+        <Route path="/cadastro" element={<Cadastro />} />
         <Route
           path="/home"
           element={
@@ -37,41 +31,38 @@ export default function App() {
           }
         />
         <Route
-          path="/transferencias"
+          path="/solicitacoes"
           element={
             <PrivateRoute>
-              <Transferencias />
+              <Solicitacoes />
             </PrivateRoute>
           }
         />
         <Route
-          path="/transferencias/novo"
+          path="/solicitacoes/novo"
           element={
             <PrivateRoute>
-              <TransferenciaForm />
+              <SolicitacaoForm />
             </PrivateRoute>
           }
         />
         <Route
-          path="/transferencias/:id/editar"
+          path="/solicitacoes/:id/editar"
           element={
             <PrivateRoute>
-              <TransferenciaForm />
+              <SolicitacaoForm />
             </PrivateRoute>
           }
         />
-
         <Route
-          path="/transferencias/:id"
+          path="/solicitacoes/:id"
           element={
             <PrivateRoute>
-              <VerTransferencia />
+              <VerSolicitacao />
             </PrivateRoute>
           }
         />
-
         <Route path="*" element={<h1>404 - Página Não Encontrada</h1>} />
-
       </Routes>
     </BrowserRouter>
   );

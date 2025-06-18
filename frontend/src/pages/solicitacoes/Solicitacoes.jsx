@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom'; // Importe 'useNavigate'
+import { Link, useNavigate } from 'react-router-dom';
 
-export default function Transferencias() {
-  const [transferencias, setTransferencias] = useState([]);
+export default function Solicitacoes() {
+  const [solicitacoes, setSolicitacoes] = useState([]);
   const [error, setError] = useState('');
-  const navigate = useNavigate(); // Inicializa useNavigate
+  const navigate = useNavigate();
 
   const handleAuthError = (err) => {
     if (err.response && err.response.status === 403) {
@@ -18,7 +18,7 @@ export default function Transferencias() {
   };
 
   useEffect(() => {
-    const fetchTransferencias = async () => {
+    const fetchSolicitacoes = async () => {
       setError('');
       const token = localStorage.getItem('token');
 
@@ -29,16 +29,16 @@ export default function Transferencias() {
       }
 
       try {
-        const res = await axios.get('http://localhost:3000/api/transferencias', {
+        const res = await axios.get('http://localhost:3000/api/solicitacoes', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTransferencias(res.data);
+        setSolicitacoes(res.data);
       } catch (err) {
         handleAuthError(err);
       }
     };
 
-    fetchTransferencias();
+    fetchSolicitacoes();
   }, [navigate]);
 
   const formatarData = (dataString) => {
@@ -60,18 +60,18 @@ export default function Transferencias() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-        console.log("Nenhum token encontrado para deletar. Redirecionando para login.");
-        navigate('/login');
-        return;
+      console.log("Nenhum token encontrado para deletar. Redirecionando para login.");
+      navigate('/login');
+      return;
     }
 
-    if (window.confirm('Tem certeza que deseja deletar esta transferência? Esta ação não pode ser desfeita.')) {
+    if (window.confirm('Tem certeza que deseja deletar esta solicitação? Esta ação não pode ser desfeita.')) {
       try {
-        await axios.delete(`http://localhost:3000/api/transferencias/${id}`, {
+        await axios.delete(`http://localhost:3000/api/solicitacoes/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTransferencias(transferencias.filter(t => t.id !== id));
-        alert('Transferência deletada com sucesso!');
+        setSolicitacoes(solicitacoes.filter(s => s.id !== id));
+        alert('Solicitação deletada com sucesso!');
       } catch (err) {
         handleAuthError(err);
       }
@@ -80,23 +80,23 @@ export default function Transferencias() {
 
   return (
     <div>
-      <h2>Transferências</h2>
-      <Link to="/transferencias/novo" style={{ marginBottom: '20px', display: 'inline-block' }}>
-        + Nova Transferência
+      <h2>Solicitações</h2>
+      <Link to="/solicitacoes/novo" style={{ marginBottom: '20px', display: 'inline-block' }}>
+        + Nova Solicitação
       </Link>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <ul>
-        {transferencias.map((t) => (
-          <li key={t.id}>
-            {t.nome_arquivo} - {t.setor_remetente} para {t.setor_destinatario} - {' '}
-            {formatarData(t.criado_em)}
+        {solicitacoes.map((s) => (
+          <li key={s.id}>
+            {s.nome_arquivo} - {s.setor_remetente} para {s.setor_destinatario} - {' '}
+            {formatarData(s.criado_em)}
             {' | '}
-            <Link to={`/transferencias/${t.id}`} style={{ marginRight: '10px' }}>Ver Detalhes</Link>
+            <Link to={`/solicitacoes/${s.id}`} style={{ marginRight: '10px' }}>Ver Detalhes</Link>
             {' | '}
-            <Link to={`/transferencias/${t.id}/editar`} style={{ marginRight: '10px' }}>Editar</Link>
+            <Link to={`/solicitacoes/${s.id}/editar`} style={{ marginRight: '10px' }}>Editar</Link>
             {' | '}
             <button
-              onClick={() => handleDelete(t.id)}
+              onClick={() => handleDelete(s.id)}
               style={{
                 backgroundColor: 'red',
                 color: 'white',
