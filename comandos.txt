@@ -1,0 +1,7 @@
+docker-compose up --build : Inicializa e constroi o container
+
+docker system prune -a --volumes : apaga todos os volumes e dependencias
+
+docker-compose down -v : desliga e apaga as dependencias do container
+
+docker exec -it mysql_arquivos mysql -u root -proot arquivos_db : acessa o banco de dados mysql do docker
