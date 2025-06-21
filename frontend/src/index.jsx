@@ -1,14 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './App.jsx';
+import { AuthProvider } from './contexts/AuthContext.jsx'; // Importante!
 
-const rootElement = document.getElementById('root');
-if (rootElement) {
-    ReactDOM.createRoot(rootElement).render(
-        <React.StrictMode>
-            <App />
-        </React.StrictMode>
-    );
-} else {
-    console.error("Elemento com ID 'root' não encontrado no DOM.");
-}
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <AuthProvider> {/* O AuthProvider envolve o App */}
+      <App />
+    </AuthProvider>
+  </React.StrictMode>,
+);
