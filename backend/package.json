@@ -20,7 +20,11 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.0",
     "mysql2": "^3.14.1",
-    "validator": "^13.15.0"
+    "validator": "^13.15.0",
+    "docxtemplater": "^3.47.0",  
+    "pizzip": "^3.1.6",          
+    "exceljs": "^4.4.0",         
+    "fs-extra": "^11.2.0"        
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

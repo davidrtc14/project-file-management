@@ -1,18 +1,34 @@
-// src/pages/login/Cadastro.jsx
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from '../../contexts/AuthContext'; // Importe o hook de autenticação
+import { useAuth } from '../../contexts/AuthContext';
+
+const API_BASE_URL = 'http://localhost:3000/api'; 
 
 export default function Cadastro() {
-  const [usuario, setUsuario] = useState(''); // Mudou de email para usuario
+  const [usuario, setUsuario] = useState(''); 
   const [password, setPassword] = useState('');
-  const [nome, setNome] = useState(''); // Novo campo para o nome
+  const [nome, setNome] = useState('');
+  const [setorId, setSetorId] = useState(''); 
+  const [setores, setSetores] = useState([]);
   const [erros, setErros] = useState([]);
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth(); // Obtém a função de login do contexto
+  const { login: authLogin, token } = useAuth(); 
+
+  useEffect(() => {
+    const fetchSetores = async () => {
+      try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {}; 
+        const res = await axios.get(`${API_BASE_URL}/setores`, { headers });
+        setSetores(res.data);
+      } catch (err) {
+        console.error("Erro ao buscar setores para cadastro:", err);
+        setErros(['Não foi possível carregar a lista de setores.']);
+      }
+    };
+    fetchSetores();
+  }, [token]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -20,19 +36,17 @@ export default function Cadastro() {
     setSuccess('');
 
     try {
-      // Envie 'usuario' (que pode ser email), 'password' e 'nome'
-      const res = await axios.post('http://localhost:3000/api/auth/register', {
+      const res = await axios.post(`${API_BASE_URL}/auth/register`, {
         usuario,
         password,
-        nome // Inclua o nome na requisição
+        nome,
+        setor_id: Number(setorId),
+        action: 'register'
       });
 
-      // Se o cadastro for bem-sucedido, chame a função login do AuthContext
-      // res.data.usuario deve conter { id, usuario, nome, roles }
       authLogin(res.data.token, res.data.usuario); 
       
       setSuccess('Cadastro realizado com sucesso! Você será redirecionado para a página inicial.');
-      // Redireciona após um pequeno delay para a mensagem de sucesso ser vista
       setTimeout(() => {
         navigate('/home'); 
       }, 2000); 
@@ -51,16 +65,18 @@ export default function Cadastro() {
   }
 
   return (
-    <div>
+    <div className="container">
       <h2>Cadastro no Sistema de Solicitações</h2>
       <form onSubmit={handleSubmit}>
+        <label htmlFor="usuario">Nome de Usuário ou Email:</label>
         <input
-          type="text" // Pode ser 'email' ou 'text'
+          type="text" 
           placeholder="Nome de Usuário ou Email" 
           value={usuario}
           onChange={e => setUsuario(e.target.value)}
           required
         />
+        <label htmlFor="password">Senha:</label>
         <input
           type="password"
           placeholder="Crie uma senha"
@@ -68,15 +84,33 @@ export default function Cadastro() {
           onChange={e => setPassword(e.target.value)}
           required
         />
-        <input // Novo input para o nome
+        <label htmlFor="nome">Nome:</label>
+        <input
           type="text"
           placeholder="Seu nome completo"
           value={nome}
           onChange={e => setNome(e.target.value)}
           required
         />
+        
+        <label htmlFor="setorId">Seu Setor:</label>
+        <select
+          id="setorId"
+          name="setorId"
+          value={setorId}
+          onChange={e => setSetorId(e.target.value)}
+          required
+        >
+          <option value="">Selecione seu setor</option>
+          {setores.map(setor => (
+            <option key={setor.id} value={setor.id}>
+              {setor.nome}
+            </option>
+          ))}
+        </select>
+
         <button type="submit">Cadastrar</button>
-      </form>
+      
 
       {success && <p style={{ color: 'green', marginTop: '1rem' }}>{success}</p>}
 
@@ -88,10 +122,10 @@ export default function Cadastro() {
         </ul>
       )}
 
-      {/* Remove o Link condicional, o redirecionamento é feito via navigate */}
       <Link to="/login" style={{ display: 'block', marginTop: '1rem' }}>
         Já tem conta? Faça login
       </Link>
+      </form>
     </div>
   );
 }

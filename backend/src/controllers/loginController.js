@@ -1,32 +1,31 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs'); // <-- Adicione bcryptjs para hashing de senhas
 const Login = require('../models/loginModel'); 
 
 // Controlador para registro de novos usuários
 exports.register = async (req, res) => {
-    // req.db está disponível aqui graças ao dbMiddleware
     const db = req.db; 
     
-    // O modelo Login precisa receber o pool de conexão
-    const login = new Login(req.body, db); 
+    // O model Login agora espera 'usuario', 'password', 'nome' e 'setor_id'
+    // E também o 'action' para validação condicional dentro do model
+    const login = new Login({ ...req.body, action: 'register' }, db); 
     await login.register();
 
     if (login.errors.length > 0) {
         return res.status(400).json({ erros: login.errors });
     }
 
-    if (!login.user || !login.user.id || !login.user.usuario) { // Mudado de email para usuario
+    if (!login.user || !login.user.id || !login.user.usuario) {
         return res.status(500).json({ erro: 'Erro interno: Usuário não retornado após registro.' });
     }
 
-    // Gerar token JWT (Payload deve incluir o ID do usuário e os papéis para autorização futura)
-    // Supondo que login.user.roles seja um array de nomes de papéis (ex: ['requerente'])
+    // Gerar token JWT
     const token = jwt.sign(
         { 
             id: login.user.id, 
-            usuario: login.user.usuario, // Mudado de email para usuario
-            roles: login.user.roles, // <-- Inclua os papéis no token
-            nome: login.user.nome
+            usuario: login.user.usuario, 
+            nome: login.user.nome,
+            setor_id: login.user.setor_id, // Inclua o setor_id no payload do JWT
+            roles: login.user.roles 
         }, 
         process.env.JWT_SECRET, 
         { expiresIn: '1h' } 
@@ -36,9 +35,10 @@ exports.register = async (req, res) => {
         mensagem: 'Usuário criado e logado com sucesso!',
         usuario: {
             id: login.user.id,
-            usuario: login.user.usuario, // Mudado de email para usuario
-            nome: login.user.nome,       // Inclua o nome para o frontend
-            roles: login.user.roles      // Inclua os papéis para o frontend
+            usuario: login.user.usuario,
+            nome: login.user.nome,       
+            setor_id: login.user.setor_id, // Inclua o setor_id na resposta direta
+            roles: login.user.roles      
         },
         token: token
     });
@@ -46,16 +46,19 @@ exports.register = async (req, res) => {
 
 // Controlador para login de usuários existentes
 exports.login = async (req, res) => {
-    const db = req.db; // Acesse o pool de conexão
-    const login = new Login(req.body, db); 
+    const db = req.db; 
+    // Para o login, o 'action' não é estritamente necessário para o model, mas é boa prática
+    const login = new Login({ ...req.body, action: 'login' }, db); 
     await login.login();
 
     if (login.errors.length > 0) {
-        return res.status(400).json({ erros: login.errors });
+        // Se o login.errors tiver algo, é um erro de credenciais inválidas ou usuário não encontrado
+        return res.status(401).json({ erros: login.errors });
     }
 
     if (!login.user) {
-        return res.status(401).json({ erro: 'Credenciais inválidas.' }); // Se o login.user não for setado, o login falhou
+        // Erro genérico caso o model não retorne o user por algum motivo
+        return res.status(401).json({ erro: 'Credenciais inválidas.' }); 
     }
 
     // Gerar token JWT com informações do usuário e papéis
@@ -63,11 +66,11 @@ exports.login = async (req, res) => {
         { 
             id: login.user.id, 
             usuario: login.user.usuario, 
-            roles: login.user.roles,
-            nome: login.user.nome
+            nome: login.user.nome,
+            setor_id: login.user.setor_id, // Inclua o setor_id no payload do JWT
+            roles: login.user.roles 
         },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        process.env.JWT_SECRET
     );
 
     res.status(200).json({ 
@@ -76,6 +79,7 @@ exports.login = async (req, res) => {
             id: login.user.id,
             usuario: login.user.usuario,
             nome: login.user.nome,
+            setor_id: login.user.setor_id, // Inclua o setor_id na resposta direta
             roles: login.user.roles
         },
         token 

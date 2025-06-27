@@ -1,34 +1,30 @@
+// src/routes/solicitacoesRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const solicitacaoController = require('../controllers/solicitacaoController');
-const authMiddleware = require('../middlewares/authMiddleware'); 
-const checkRole = require('../middlewares/roleMiddleware');     // <-- Importe o middleware de papéis aqui
+const authMiddleware = require('../middlewares/authMiddleware');
+const checkRole = require('../middlewares/roleMiddleware');
+const upload = require('../config/multerConfig'); // <-- Importar o multer configurado
 
-// Rotas para as operações de Solicitações:
+// Rotas para as operações de Solicitações (CRUD)
 
-// Criar Solicitação:
-// Apenas usuários logados que sejam 'administrador' OU 'requerente' podem criar.
-router.post('/', authMiddleware, checkRole(['administrador', 'requerente']), solicitacaoController.criar);
+// Criar Solicitação: Qualquer usuário autenticado (admin ou funcionario)
+router.post('/', authMiddleware, checkRole(['administrador', 'funcionario']), solicitacaoController.criar);
 
-// Listar Solicitações:
-// Usuários 'administrador' veem todas.
-// Usuários 'requerente' veem apenas as suas (lógica de filtro no controller).
-// Aqui, apenas authMiddleware é necessário. A lógica de permissão mais fina (quem vê o quê)
-// está DENTRO do solicitacaoController.listar.
+// Listar Solicitações: Qualquer usuário autenticado (admin vê todas, funcionario vê por setor)
+// A lógica de filtro está dentro do solicitacaoController.listar
 router.get('/', authMiddleware, solicitacaoController.listar); 
 
-// Buscar Solicitação por ID:
-// Usuários 'administrador' veem qualquer uma.
-// Usuários 'requerente' veem apenas as suas (lógica de filtro no controller).
-// authMiddleware é suficiente. A lógica de permissão mais fina está no solicitacaoController.buscar.
+// Buscar Solicitação por ID: Qualquer usuário autenticado (admin vê qualquer, funcionario vê do seu setor ou própria)
+// A lógica de filtro está dentro do solicitacaoController.buscar
 router.get('/:id', authMiddleware, solicitacaoController.buscar);
 
-// Atualizar Solicitação:
-// Apenas usuários com papel 'administrador' podem atualizar.
-router.put('/:id', authMiddleware, checkRole(['administrador']), solicitacaoController.atualizar);
+// Atualizar Solicitação: Qualquer usuário autenticado (admin ou funcionario)
+router.put('/:id', authMiddleware, checkRole(['administrador', 'funcionario']), solicitacaoController.atualizar);
+router.put('/:id/anexar-relatorio', authMiddleware, upload.single('file'), solicitacaoController.anexarRelatorioAssinado);
 
-// Excluir Solicitação:
-// Apenas usuários com papel 'administrador' podem excluir.
+// Excluir Solicitação: Apenas Administradores
 router.delete('/:id', authMiddleware, checkRole(['administrador']), solicitacaoController.excluir);
 
 module.exports = router;

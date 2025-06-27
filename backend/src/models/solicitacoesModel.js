@@ -7,35 +7,70 @@ class Solicitacao {
         this.db = db;
     }
 
-    valida(isUpdate = false) {
+    valida(fieldsToValidate = null) {
         this.cleanUp();
+        this.errors = [];
 
-        if (!isUpdate) {
-            if (!this.body.nome_documento) this.errors.push('Nome do documento é obrigatório.');
-            if (typeof this.body.quantidade !== 'number' || !Number.isInteger(this.body.quantidade) || this.body.quantidade <= 0) {
-                this.errors.push('Quantidade é obrigatória e deve ser um número inteiro positivo.');
+        const validationRules = {
+            nome_documento: {
+                condition: () => !this.body.nome_documento || typeof this.body.nome_documento !== 'string',
+                message: 'Nome do documento é obrigatório.'
+            },
+            quantidade: {
+                condition: () => typeof this.body.quantidade !== 'number' || !Number.isInteger(this.body.quantidade) || this.body.quantidade <= 0,
+                message: 'Quantidade é obrigatória e deve ser um número inteiro positivo.'
+            },
+            setor_remetente_id: {
+                condition: () => !this.body.setor_remetente_id,
+                message: 'ID do setor remetente é obrigatório.'
+            },
+            setor_destinatario_id: {
+                condition: () => !this.body.setor_destinatario_id,
+                message: 'ID do setor destinatário é obrigatório.'
+            },
+            requerente_id: {
+                condition: () => !this.body.requerente_id,
+                message: 'ID do requerente é obrigatório.'
+            },
+            responsavel_setor_id: {
+                condition: () => !this.body.responsavel_setor_id,
+                message: 'ID do responsável do setor é obrigatório.'
+            },
+            data_transferencia: {
+                condition: () => !this.body.data_transferencia,
+                message: 'Data da transferência é obrigatória.'
+            },
+            data_transferencia_format: {
+                condition: () => this.body.data_transferencia && !/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(this.body.data_transferencia),
+                message: 'Formato de data da transferência inválido (YYYY-MM-DD esperado).'
+            },
+            status: {
+                condition: () => {
+                    const validStatuses = ['pendente', 'recebido', 'assinado', 'recusado'];
+                    return this.body.status && !validStatuses.includes(this.body.status);
+                },
+                message: 'Status inválido. Valores permitidos: pendente, recebido, assinado, recusado.'
+            },
+            data_recebimento_format: {
+                condition: () => this.body.data_recebimento && isNaN(new Date(this.body.data_recebimento).getTime()),
+                message: 'Formato de data de recebimento inválido.'
+            },
+            caminho_arquivo_assinado_format: {
+                condition: () => this.body.caminho_arquivo_assinado && typeof this.body.caminho_arquivo_assinado !== 'string',
+                message: 'Caminho do arquivo assinado inválido.'
+            },
+            observacoes_format: {
+                condition: () => this.body.observacoes !== undefined && typeof this.body.observacoes !== 'string' && this.body.observacoes !== null,
+                message: 'Observações inválidas.'
             }
-            if (!this.body.setor_remetente_id) this.errors.push('ID do setor remetente é obrigatório.');
-            if (!this.body.setor_destinatario_id) this.errors.push('ID do setor destinatário é obrigatório.');
-            if (!this.body.requerente_id) this.errors.push('ID do requerente é obrigatório.');
-            if (!this.body.responsavel_setor_id) this.errors.push('ID do responsável do setor é obrigatório.');
-            if (!this.body.data_transferencia) this.errors.push('Data da transferência é obrigatória.');
-        } else {
-            if (this.body.nome_documento !== undefined && typeof this.body.nome_documento !== 'string') {
-                this.errors.push('Nome do documento inválido.');
-            }
-            if (this.body.quantidade !== undefined && (typeof this.body.quantidade !== 'number' || !Number.isInteger(this.body.quantidade) || this.body.quantidade <= 0)) {
-                this.errors.push('Quantidade inválida (deve ser um número inteiro positivo).');
-            }
-        }
+        };
 
-        if (this.body.data_transferencia && !/^\d{4}-\d{2}-\d{2}$/.test(this.body.data_transferencia)) {
-            this.errors.push('Formato de data da transferência inválido (YYYY-MM-DD esperado).');
-        }
-
-        const validStatuses = ['pendente', 'recebido', 'assinado', 'recusado'];
-        if (this.body.status && !validStatuses.includes(this.body.status)) {
-            this.errors.push('Status inválido. Valores permitidos: pendente, recebido, assinado, recusado.');
+        for (const field in validationRules) {
+            if (fieldsToValidate === null || fieldsToValidate.includes(field)) {
+                if (validationRules[field].condition()) {
+                    this.errors.push(validationRules[field].message);
+                }
+            }
         }
     }
 
@@ -53,7 +88,7 @@ class Solicitacao {
         this.body.quantidade = parseInt(this.body.quantidade, 10) || 0;
         this.body.descricao = this.body.descricao || null;
         this.body.observacoes = this.body.observacoes || null;
-        this.body.status = this.body.status || 'pendente'; 
+        this.body.status = this.body.status || 'pendente';
         this.body.data_recebimento = this.body.data_recebimento || null;
         this.body.caminho_arquivo_assinado = this.body.caminho_arquivo_assinado || null;
     }
@@ -119,7 +154,9 @@ class Solicitacao {
                 sr.nome AS setor_remetente_nome,
                 sd.nome AS setor_destinatario_nome,
                 u_req.nome AS requerente_nome,
-                u_resp.nome AS responsavel_setor_nome
+                u_resp.nome AS responsavel_setor_nome,
+                u_req.setor_id AS requerente_setor_id,
+                u_resp.setor_id AS responsavel_setor_origem_id
             FROM solicitacoes s
             JOIN setores sr ON s.setor_remetente_id = sr.id
             JOIN setores sd ON s.setor_destinatario_id = sd.id
@@ -130,14 +167,16 @@ class Solicitacao {
         return rows;
     }
 
-    static async listarPorRequerente(db, requerenteId) {
+    static async listarPorFuncionario(db, funcionarioId) {
         const [rows] = await db.execute(`
             SELECT
                 s.*,
                 sr.nome AS setor_remetente_nome,
                 sd.nome AS setor_destinatario_nome,
                 u_req.nome AS requerente_nome,
-                u_resp.nome AS responsavel_setor_nome
+                u_resp.nome AS responsavel_setor_nome,
+                u_req.setor_id AS requerente_setor_id,
+                u_resp.setor_id AS responsavel_setor_origem_id
             FROM solicitacoes s
             JOIN setores sr ON s.setor_remetente_id = sr.id
             JOIN setores sd ON s.setor_destinatario_id = sd.id
@@ -145,7 +184,28 @@ class Solicitacao {
             JOIN usuarios u_resp ON s.responsavel_setor_id = u_resp.id
             WHERE s.requerente_id = ?
             ORDER BY s.criado_em DESC
-        `, [requerenteId]);
+        `, [funcionarioId]);
+        return rows;
+    }
+
+    static async listarPorSetor(db, setorId) {
+        const [rows] = await db.execute(`
+            SELECT
+                s.*,
+                sr.nome AS setor_remetente_nome,
+                sd.nome AS setor_destinatario_nome,
+                u_req.nome AS requerente_nome,
+                u_resp.nome AS responsavel_setor_nome,
+                u_req.setor_id AS requerente_setor_id,
+                u_resp.setor_id AS responsavel_setor_origem_id
+            FROM solicitacoes s
+            JOIN setores sr ON s.setor_remetente_id = sr.id
+            JOIN setores sd ON s.setor_destinatario_id = sd.id
+            JOIN usuarios u_req ON s.requerente_id = u_req.id
+            JOIN usuarios u_resp ON s.responsavel_setor_id = u_resp.id
+            WHERE s.setor_remetente_id = ? OR s.setor_destinatario_id = ?
+            ORDER BY s.criado_em DESC
+        `, [setorId, setorId]);
         return rows;
     }
 
@@ -156,7 +216,9 @@ class Solicitacao {
                 sr.nome AS setor_remetente_nome,
                 sd.nome AS setor_destinatario_nome,
                 u_req.nome AS requerente_nome,
-                u_resp.nome AS responsavel_setor_nome
+                u_resp.nome AS responsavel_setor_nome,
+                u_req.setor_id AS requerente_setor_id,
+                u_resp.setor_id AS responsavel_setor_origem_id
             FROM solicitacoes s
             JOIN setores sr ON s.setor_remetente_id = sr.id
             JOIN setores sd ON s.setor_destinatario_id = sd.id
@@ -169,11 +231,24 @@ class Solicitacao {
 
     static async atualizar(id, newData, db) {
         const solicitacaoInstance = new Solicitacao(newData, db);
-        solicitacaoInstance.valida(true); 
+        
+        // NOVO: Passa explicitamente os campos a serem validados no contexto de atualização
+        const fieldsToValidate = Object.keys(newData).filter(key => 
+            key !== 'id' && key !== 'criado_em' && key !== 'requerente_id'
+        );
+        // Garante que o status seja validado se estiver presente
+        if (newData.status !== undefined && !fieldsToValidate.includes('status')) fieldsToValidate.push('status');
+        // Garante que data_recebimento seja validada se estiver presente
+        if (newData.data_recebimento !== undefined && !fieldsToValidate.includes('data_recebimento')) fieldsToValidate.push('data_recebimento');
+        // Garante que caminho_arquivo_assinado seja validada se estiver presente
+        if (newData.caminho_arquivo_assinado !== undefined && !fieldsToValidate.includes('caminho_arquivo_assinado')) fieldsToValidate.push('caminho_arquivo_assinado');
+
+        solicitacaoInstance.valida(fieldsToValidate); // Chama a validação com os campos específicos
         if (solicitacaoInstance.errors.length > 0) {
             throw new Error(solicitacaoInstance.errors.join('; ')); 
         }
-
+        
+        // Adapta _checkForeignKeys para validar apenas os IDs que estão sendo atualizados
         const fkCheckPromises = [];
         if (solicitacaoInstance.body.setor_remetente_id !== null && solicitacaoInstance.body.setor_remetente_id !== undefined) {
              fkCheckPromises.push(db.execute('SELECT id FROM setores WHERE id = ?', [solicitacaoInstance.body.setor_remetente_id])

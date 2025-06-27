@@ -10,6 +10,7 @@ dotenv.config();
 const dbMiddleware = require('./src/middlewares/dbMiddleware'); 
 const solicitacaoRoutes = require('./src/routes/solicitacoesRoutes');
 const loginRoutes = require('./src/routes/loginRoutes');
+const dataRoutes = require('./src/routes/dataRoutes');
 
 const app = express();
 
@@ -24,6 +25,8 @@ app.use(dbMiddleware);
 
 app.use('/api/solicitacoes', solicitacaoRoutes);
 app.use('/api/auth', loginRoutes);
+app.use('/api', dataRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 

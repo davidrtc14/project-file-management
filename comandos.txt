@@ -5,3 +5,15 @@ docker system prune -a --volumes : apaga todos os volumes e dependencias
 docker-compose down -v : desliga e apaga as dependencias do container
 
 docker exec -it mysql_arquivos mysql -u root -proot arquivos_db : acessa o banco de dados mysql do docker
+
+INSERT INTO usuario_roles (usuario_id, role_id) VALUES (1, 1);
+
+SELECT u.usuario, r.nome AS papel
+
+FROM usuarios u
+
+JOIN usuario_roles ur ON u.id = ur.usuario_id
+
+JOIN roles r ON ur.role_id = r.id
+
+WHERE u.usuario = 'davidrtc14@gmail.com';

@@ -1,20 +1,28 @@
-# Imagem base
-FROM node:18
+# backend/Dockerfile
 
-# Diretório de trabalho dentro do container
+# Imagem base
+FROM node:20
+
+# Diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos package.json e package-lock.json
+# Copiar package.json e package-lock.json
 COPY package*.json ./
 
-# Instala as dependências
+# Instalar dependências Node.js
 RUN npm install
 
-# Copia o restante do código
+# Instalar LibreOffice Headless (para conversão DOCX/XLSX para PDF)
+# Use debian-based images (node:20 é geralmente baseado em Debian/Ubuntu)
+RUN apt-get update && \
+    apt-get install -yq libreoffice-writer libreoffice-calc --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copiar o restante da aplicação
 COPY . .
 
-# Expõe a porta (deve ser a mesma do .env)
+# Expor a porta
 EXPOSE 3000
 
-# Comando para iniciar o servidor
+# Comando para iniciar a aplicação
 CMD ["npm", "run", "dev"]
