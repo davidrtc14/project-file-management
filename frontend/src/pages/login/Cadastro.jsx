@@ -65,7 +65,7 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="container">
+    <div>
       <h2>Cadastro no Sistema de Solicitações</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor="usuario">Nome de Usuário ou Email:</label>

@@ -1,0 +1,54 @@
+button,
+.button {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s ease-in-out;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+button:hover,
+.button:hover {
+  background-color: #0056b3;
+}
+
+button:disabled,
+.button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.button-green {
+  padding: 14px 15px;
+  background-color: #28a745;
+  color: white;
+}
+
+.button-green:hover {
+  background-color: #218838;
+}
+
+.button-red {
+  background-color: #dc3545;
+  color: white;
+}
+
+.button-red:hover {
+  background-color: #c82333;
+}
+
+.button-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.button-secondary:hover {
+  background-color: #5a6268;
+}

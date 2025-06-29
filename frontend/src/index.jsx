@@ -1,15 +1,20 @@
-// frontend/src/main.jsx
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
-import './index.css'; // <-- ESTA LINHA É CRUCIAL!
+import './styles/global.css';
+import './styles/buttons.css';
+import './styles/forms.css';
+import './styles/layout.css';
+import './styles/solicitacoes.css';
 import { AuthProvider } from './contexts/AuthContext.jsx';
+import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </AuthProvider>
   </React.StrictMode>,
 );

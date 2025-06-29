@@ -37,7 +37,7 @@ export default function Login() {
   }
 
   return (
-    <div className="container">
+    <div>
       <h2>Acesso ao Sistema de Solicitações</h2>
       <form onSubmit={handleSubmit}>
         <label htmlFor="usuario">Nome de Usuário ou Email:</label>

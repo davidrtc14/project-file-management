@@ -197,7 +197,7 @@ export default function VerSolicitacao() {
   }
 
   return (
-    <div className='container'>
+    <div>
       <h2>Detalhes da Solicitação: {solicitacao.nome_documento}</h2>
 
       <p><strong>ID da Solicitação:</strong> {solicitacao.id}</p>

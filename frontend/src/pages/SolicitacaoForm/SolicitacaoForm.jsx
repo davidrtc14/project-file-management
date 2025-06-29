@@ -158,7 +158,7 @@ export default function SolicitacaoForm() {
     }
 
     return (
-  <div className="container">
+  <div>
     <form onSubmit={handleSubmit} className="form-wrapper">
       <h2>{id ? 'Editar' : 'Nova'} Solicitação de Documentos</h2>  
       <div className="form-field-group">

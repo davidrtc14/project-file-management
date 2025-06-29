@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 const STATIC_FILES_BASE_URL = 'http://localhost:3000'; 
@@ -179,7 +179,7 @@ export default function Home() {
   };
 
   return (
-    <div className="container"> 
+    <div> 
       <h1>Bem-vindo, {user ? user.nome || user.usuario : 'usuário'}!</h1>
       <h2>Solicitações do Setor: {getSelectedSetorName()}</h2>
 
